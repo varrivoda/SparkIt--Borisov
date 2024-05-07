@@ -19,7 +19,7 @@ public class SparkInvocationHandlerImpl implements SparkInvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Dataset<Row> dataset = extractor.readData(pathToData);
+        Dataset<Row> dataset = extractor.readData(pathToData, context);
         List<SparkTransformation> sparkTransformations = transformationChain.get(method);
         for (SparkTransformation transformation:sparkTransformations){
             transformation.transform(dataset);
