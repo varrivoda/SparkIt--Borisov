@@ -17,15 +17,55 @@ public class SparkInvocationHandlerFactory {
     //-context for some reason
 
     private DataExtractorResolver dataExtractorResolver;
+
     private Map<String, TransformationSpider> spiderMap;
+    private Map<Method, Finalizer> finalizerMap = new HashMap<>();
 
     private Map<Method, List<SparkTransformation>> transformationChain = new HashMap<>();
-    private Map<Method, Finalizer> finalizerMap = new HashMap<>();
 
     SparkInvocationHandler create(Class <? extends SparkRepository> repoIinterface){
         Class<?> modelClass = getModelClass(repoIinterface);
         Set<String> fieldNames = getFieldNames(modelClass);
 
+        Method[] methods = repoIinterface.getMethods();
+        for (Method method : methods) {
+            TransformationSpider currentSpider =null;
+
+            List<SparkTransformation> transformations = new ArrayList<>();
+            Map<Method, Finalizer> method2Finalizer = new HashMap<>();
+
+            List<String> methodWords = new ArrayList<>(
+                    Arrays.asList(
+                            method.getName().split("(?=\\p{Upper})")));
+
+            while(methodWords.size()>1){
+                String strategyName = WordsMatcher.findAndRemoveMatchingPiecesIfExists(
+                        spiderMap.keySet(), methodWords);
+                // This static method finds members of some list inside of another list.
+                // It returns this found match and makes the romoves from second list found members.
+                // we will use itin many places, but here..
+                // Here it is finding strategyNames inside of repository method name,
+                // And leaving in second list what's left after finding and removing strategy name/
+
+                if(!strategyName.isEmpty()) {
+                    currentSpider = spiderMap.get(strategyName);
+                }
+                transformations.add(currentSpider.createTransformation(methodWords));
+                //1:58:20
+            }
+            transformationChain.put(method, transformations);
+
+            // now let's do with the finalizer
+            //it is "collect" by default
+            // but if there ifonly one remaining word... it exactly must be a name of finalizer
+            String finalizerName = "collect";
+            if(methodWords.size()==1){
+                finalizerName=methodWords.get(0);
+            }
+            method2Finalizer.put(method, finalizerMap.get(finalizerName));
+
+
+        }
 
     }
 
