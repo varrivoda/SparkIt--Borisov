@@ -1,6 +1,7 @@
 package com.example.starter;
 
 import com.example.blacklist.SparkRepository;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -15,25 +16,26 @@ public class SparkInvocationHandlerFactory {
     //-all the finalizers
     //-all the Strategy-Appliers
     //-context for some reason
-
+    private ConfigurableApplicationContext context;
+    private SparkInvocationHandlerImpl sparkInvocationHandlerImpl;
     private DataExtractorResolver dataExtractorResolver;
-
     private Map<String, TransformationSpider> spiderMap;
-    private Map<Method, Finalizer> finalizerMap = new HashMap<>();
+    private Map<Method, Finalizer> finalizerMap;
 
     private Map<Method, List<SparkTransformation>> transformationChain = new HashMap<>();
 
-    SparkInvocationHandler create(Class <? extends SparkRepository> repoIinterface){
-        Class<?> modelClass = getModelClass(repoIinterface);
-        Set<String> fieldNames = getFieldNames(modelClass);
+    SparkInvocationHandler create(Class <? extends SparkRepository> repoInterface){
+        Class<?> modelClass = getModelClass(repoInterface);
+        String pathToData = modelClass.getAnnotation(Source.class).value();
 
-        Method[] methods = repoIinterface.getMethods();
+        Set<String> fieldNames = getFieldNames(modelClass);
+        Map<Method, Finalizer> method2Finalizer = new HashMap<>();
+        DataExtractor dataExtractor = dataExtractorResolver.resolve(pathToData);
+
+        Method[] methods = repoInterface.getMethods();
         for (Method method : methods) {
             TransformationSpider currentSpider =null;
-
             List<SparkTransformation> transformations = new ArrayList<>();
-            Map<Method, Finalizer> method2Finalizer = new HashMap<>();
-
             List<String> methodWords = new ArrayList<>(
                     Arrays.asList(
                             method.getName().split("(?=\\p{Upper})")));
@@ -53,7 +55,6 @@ public class SparkInvocationHandlerFactory {
                 transformations.add(currentSpider.createTransformation(methodWords));
                 //1:58:20
             }
-            transformationChain.put(method, transformations);
 
             // now let's do with the finalizer
             //it is "collect" by default
@@ -62,10 +63,19 @@ public class SparkInvocationHandlerFactory {
             if(methodWords.size()==1){
                 finalizerName=methodWords.get(0);
             }
+            transformationChain.put(method, transformations);
             method2Finalizer.put(method, finalizerMap.get(finalizerName));
 
-
         }
+
+        return sparkInvocationHandlerImpl.builder()
+                .modelClass(modelClass)
+                .pathToData(pathToData)
+                .finalizerMap(method2Finalizer)
+                .transformationChain(transformationChain)
+                .extractor(dataExtractor)
+                .context(context)
+                .build();
 
     }
 
@@ -82,7 +92,6 @@ public class SparkInvocationHandlerFactory {
     private Class<?> getModelClass(Class<? extends SparkRepository> repoIinterface) {
         ParameterizedType[] genericInterfaces = (ParameterizedType[]) repoIinterface.getGenericInterfaces();
         Class<?> modelClass = (Class<?>) genericInterfaces[0].getActualTypeArguments()[0];
-        String pathToData = modelClass.getAnnotation(Source.class).value();
         return modelClass;
     }
 

@@ -1,5 +1,6 @@
 package com.example.starter;
 
+import lombok.Builder;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -8,6 +9,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
+@Builder
 public class SparkInvocationHandlerImpl implements SparkInvocationHandler {
 
     private Class<?> modelClass;
