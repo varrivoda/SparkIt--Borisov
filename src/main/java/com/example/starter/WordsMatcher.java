@@ -12,9 +12,10 @@ public class WordsMatcher {
         List<String> remainingOptions = options.stream()
                 .filter(option->option.toLowerCase().startsWith(match.toString().toLowerCase()))
                 .collect(Collectors.toList());
+        //фильтр оставил нам "name" и "nameOfGrandma"
+
         if(remainingOptions.isEmpty()) return "";
 
-        //фильтр оставил нам "name" и "nameOfGrandma"
         while (remainingOptions.size()>1){
             match.append(pieces.remove(0));
             remainingOptions.removeIf(
