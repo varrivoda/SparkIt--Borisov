@@ -6,6 +6,7 @@ import org.apache.spark.sql.SparkSession;
 import org.reflections.Reflections;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.beans.Introspector;
 import java.lang.reflect.Proxy;
@@ -13,6 +14,11 @@ import java.lang.reflect.Proxy;
 public class SparkDataApplicationContextInitializer implements ApplicationContextInitializer {
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
+        AnnotationConfigApplicationContext tempContext = new AnnotationConfigApplicationContext(InternalConfig.class);
+        SparkInvocationHandlerFactory factory = tempContext.getBean(SparkInvocationHandlerFactory.class);
+        factory.setRealContext(applicationContext);
+        tempContext.close();
+
         registerBeans(applicationContext);
 
         Reflections scanner = new Reflections(

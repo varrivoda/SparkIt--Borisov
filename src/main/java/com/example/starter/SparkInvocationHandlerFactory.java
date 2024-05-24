@@ -1,36 +1,41 @@
 package com.example.starter;
 
 import com.example.blacklist.SparkRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component
+@RequiredArgsConstructor
 public class SparkInvocationHandlerFactory {
     //must have:
-    //-Extracror
+    //-Extractors
     //-all the finalizers
     //-all the Strategy-Appliers
     //-context for some reason
-    private ConfigurableApplicationContext context;
-    private SparkInvocationHandlerImpl sparkInvocationHandlerImpl;
-    private DataExtractorResolver dataExtractorResolver;
-    private Map<String, TransformationSpider> spiderMap;
-    private Map<Method, Finalizer> finalizerMap;
+    private final DataExtractorResolver dataExtractorResolver;
+    private final Map<String, TransformationSpider> spiderMap;
+    private final Map<Method, Finalizer> finalizerMap;
 
-    private Map<Method, List<SparkTransformation>> transformationChain = new HashMap<>();
+    @Setter
+    private ConfigurableApplicationContext realContext;
+    //? private SparkInvocationHandlerImpl sparkInvocationHandlerImpl;
 
     SparkInvocationHandler create(Class <? extends SparkRepository> repoInterface){
         Class<?> modelClass = getModelClass(repoInterface);
-        String pathToData = modelClass.getAnnotation(Source.class).value();
-
         Set<String> fieldNames = getFieldNames(modelClass);
-        Map<Method, Finalizer> method2Finalizer = new HashMap<>();
+        String pathToData = modelClass.getAnnotation(Source.class).value();
         DataExtractor dataExtractor = dataExtractorResolver.resolve(pathToData);
+
+        Map<Method, List<SparkTransformation>> transformationChain = new HashMap<>();
+        Map<Method, Finalizer> method2Finalizer = new HashMap<>();
 
         Method[] methods = repoInterface.getMethods();
         for (Method method : methods) {
@@ -74,7 +79,7 @@ public class SparkInvocationHandlerFactory {
                 .finalizerMap(method2Finalizer)
                 .transformationChain(transformationChain)
                 .extractor(dataExtractor)
-                .context(context)
+                .context(realContext)
                 .build();
 
     }
