@@ -1,5 +1,6 @@
-package com.example.starter;
+package com.example.starter.unsafe;
 
+import com.example.blacklist.Source;
 import com.example.blacklist.SparkRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

@@ -1,4 +1,4 @@
-package com.example.starter;
+package com.example.starter.unsafe;
 
 import com.example.blacklist.SparkRepository;
 import org.apache.spark.api.java.JavaSparkContext;
