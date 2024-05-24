@@ -1,9 +1,8 @@
-package com.example.starter;
+package com.example.starter.unsafe;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Source {
-    String value();
+public @interface Transient{
 }

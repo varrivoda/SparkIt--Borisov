@@ -1,4 +1,4 @@
-package com.example.starter;
+package com.example.starter.unsafe;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
