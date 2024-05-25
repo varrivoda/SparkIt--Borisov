@@ -8,8 +8,8 @@ import java.util.List;
 
 public class BetweenFilter implements FilterTransformation {
     @Override
-    public void transform(Dataset<Row> dataset, List<String> fieldNames, List<Object> args) {
-        dataset.filter(functions.col(fieldNames.get(0)).between(args.remove(0), args.remove(0)));
+    public void transform(Dataset<Row> dataset, List<String> fieldNames, OrderedBag<Object> args) {
+        dataset.filter(functions.col(fieldNames.get(0)).between(args.takeAndRemove(), args.takeAndRemove()));
         // с листами не очень, надо написать кастомную коллекцию, чтобы не делать ремув()
     }
 }
