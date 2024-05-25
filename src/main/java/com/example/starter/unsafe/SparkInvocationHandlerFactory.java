@@ -27,7 +27,6 @@ public class SparkInvocationHandlerFactory {
 
     @Setter
     private ConfigurableApplicationContext realContext;
-    //? private SparkInvocationHandlerImpl sparkInvocationHandlerImpl;
 
     SparkInvocationHandler create(Class <? extends SparkRepository> repoInterface){
         Class<?> modelClass = getModelClass(repoInterface);
@@ -58,7 +57,7 @@ public class SparkInvocationHandlerFactory {
                 if(!strategyName.isEmpty()) {
                     currentSpider = spiderMap.get(strategyName);
                 }
-                transformations.add(currentSpider.createTransformation(methodWords));
+                transformations.add(currentSpider.createTransformation(methodWords, fieldNames));
                 //1:58:20
             }
 
@@ -74,7 +73,7 @@ public class SparkInvocationHandlerFactory {
 
         }
 
-        return sparkInvocationHandlerImpl.builder()
+        return SparkInvocationHandlerImpl.builder()
                 .modelClass(modelClass)
                 .pathToData(pathToData)
                 .finalizerMap(method2Finalizer)
