@@ -1,0 +1,27 @@
+name: zerocracy
+'on':
+  schedule:
+    - cron: '0,10,20,30,40,50 * * * *'
+concurrency:
+  group: zerocracy
+  cancel-in-progress: false
+jobs:
+  zerocracy:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: zerocracy/judges-action@0.0.4
+        with:
+          token: ${{ secrets.ZEROCRACY_TOKEN }}
+          options: |
+            token=${{ secrets.GITHUB_TOKEN }}
+            repositories=yegor256/judges,yegor256/*,-yegor256/test
+          factbase: foo.fb
+      - uses: zerocracy/pages-action@0.0.7
+        with:
+          factbase: test_team.fb
+      - uses: JamesIves/github-pages-deploy-action@v4.6.0
+        with:
+          branch: gh-pages
+          folder: pages
+          clean: false
